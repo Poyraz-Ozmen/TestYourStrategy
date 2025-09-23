@@ -1,0 +1,53 @@
+{
+  "name": "test-your-strategy",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build --turbopack",
+    "start": "next start",
+    "lint": "eslint",
+    "fetch-data": "npx tsx src/scripts/fetch-free-data.ts",
+    "fetch-alpha": "npx tsx src/scripts/fetch-real-data.ts",
+    "fetch-demo": "npx tsx src/scripts/fetch-demo-alpha.ts",
+    "generate-data": "npx tsx src/scripts/generate-realistic-data.ts",
+    "generate-volatile": "npx tsx src/scripts/generate-volatile-data.ts",
+    "check-data": "npx tsx src/scripts/check-data.ts",
+    "debug-strategy": "npx tsx src/scripts/debug-strategy.ts",
+    "test-strategies": "npx tsx src/scripts/test-multiple-strategies.ts",
+    "fetch-real": "npx tsx src/scripts/fetch-real-historical-data.ts",
+    "import-real": "npx tsx src/scripts/import-real-btc-data.ts",
+    "verify-prices": "npx tsx src/scripts/verify-real-prices.ts",
+    "fetch-daily": "python scripts/fetch_daily_data.py",
+    "fetch-daily-simple": "python scripts/fetch_daily_simple.py",
+    "fetch-daily-wal": "python scripts/fetch_daily_wal.py",
+    "show-daily": "python scripts/show_daily_data.py",
+    "db:reset": "npx prisma db push --force-reset",
+    "db:studio": "npx prisma studio"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.16.1",
+    "autoprefixer": "^10.4.21",
+    "csv-parse": "^6.1.0",
+    "date-fns": "^4.1.0",
+    "lucide-react": "^0.544.0",
+    "next": "15.5.3",
+    "next-themes": "^0.4.6",
+    "prisma": "^6.16.1",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "recharts": "^3.2.0",
+    "tsx": "^4.20.5"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.3",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5"
+  }
+}

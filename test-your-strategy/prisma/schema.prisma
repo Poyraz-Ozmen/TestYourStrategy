@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Asset {
+  id          String      @id @default(cuid())
+  symbol      String      @unique
+  name        String
+  type        AssetType
+  exchange    String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  priceData   PriceData[]
+  strategies  Strategy[]
+}
+
+model PriceData {
+  id        String   @id @default(cuid())
+  assetId   String
+  asset     Asset    @relation(fields: [assetId], references: [id])
+  date      DateTime
+  open      Float
+  high      Float
+  low       Float
+  close     Float
+  volume    Float
+  createdAt DateTime @default(now())
+
+  @@unique([assetId, date])
+}
+
+model Strategy {
+  id          String           @id @default(cuid())
+  name        String
+  description String?
+  assetId     String
+  asset       Asset            @relation(fields: [assetId], references: [id])
+  parameters  Json
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  backtests   BacktestResult[]
+}
+
+model BacktestResult {
+  id                String   @id @default(cuid())
+  strategyId        String
+  strategy          Strategy @relation(fields: [strategyId], references: [id])
+  startDate         DateTime
+  endDate           DateTime
+  totalReturn       Float
+  winRate           Float
+  totalTrades       Int
+  profitableTrades  Int
+  results           Json
+  createdAt         DateTime @default(now())
+}
+
+enum AssetType {
+  STOCK
+  CRYPTO
+}
