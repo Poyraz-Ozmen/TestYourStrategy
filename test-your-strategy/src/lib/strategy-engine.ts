@@ -2,7 +2,8 @@ import { MarketData } from './market-data'
 
 export interface StrategyParameters {
   type: 'percentage_change'
-  threshold: number
+  thresholdMin: number
+  thresholdMax: number
   period: number
   direction: 'up' | 'down'
 }
@@ -56,17 +57,25 @@ export class StrategyEngine {
     dataWithChanges.forEach((item, index) => {
       const percentageChange = (item as any).percentageChange
 
-      if (strategy.direction === 'down' && percentageChange <= -Math.abs(strategy.threshold)) {
-        matches.push(index)
-      } else if (strategy.direction === 'up' && percentageChange >= Math.abs(strategy.threshold)) {
-        matches.push(index)
+      if (strategy.direction === 'down') {
+        const minThreshold = -Math.abs(strategy.thresholdMax)
+        const maxThreshold = -Math.abs(strategy.thresholdMin)
+        if (percentageChange >= minThreshold && percentageChange <= maxThreshold) {
+          matches.push(index)
+        }
+      } else if (strategy.direction === 'up') {
+        const minThreshold = Math.abs(strategy.thresholdMin)
+        const maxThreshold = Math.abs(strategy.thresholdMax)
+        if (percentageChange >= minThreshold && percentageChange <= maxThreshold) {
+          matches.push(index)
+        }
       }
     })
 
     return matches
   }
 
-  static backtest(data: MarketData[], strategy: StrategyParameters, holdingPeriod: number = 7): BacktestResults {
+  static backtest(data: MarketData[], strategy: StrategyParameters, analysisDays: number = 7): BacktestResults {
     const matches = this.findMatches(data, strategy)
     const trades: BacktestTrade[] = []
     let totalReturn = 0
@@ -74,7 +83,7 @@ export class StrategyEngine {
 
     matches.forEach(matchIndex => {
       const entryIndex = matchIndex + 1
-      const exitIndex = entryIndex + holdingPeriod
+      const exitIndex = entryIndex + analysisDays
 
       if (exitIndex >= data.length) return
 
@@ -149,9 +158,9 @@ export class StrategyEngine {
     return stdDev === 0 ? 0 : avgReturn / stdDev
   }
 
-  static analyzeStrategy(data: MarketData[], strategy: StrategyParameters): {
+  static analyzeStrategy(data: MarketData[], strategy: StrategyParameters, analysisDays: number = 7): {
     matches: Array<{ date: string; price: number; change: number }>
-    nextWeekReturns: Array<{ date: string; return: number; returnPercentage: number }>
+    analysisReturns: Array<{ date: string; return: number; returnPercentage: number }>
   } {
     const dataWithChanges = this.calculatePercentageChange(data, strategy.period)
     const matchIndices = this.findMatches(data, strategy)
@@ -162,22 +171,22 @@ export class StrategyEngine {
       change: (dataWithChanges[index] as any).percentageChange
     }))
 
-    const nextWeekReturns = matchIndices.map(index => {
-      const nextWeekIndex = index + 7
-      if (nextWeekIndex >= data.length) return null
+    const analysisReturns = matchIndices.map(index => {
+      const analysisIndex = index + analysisDays
+      if (analysisIndex >= data.length) return null
 
       const currentPrice = data[index].close
-      const nextWeekPrice = data[nextWeekIndex].close
-      const returnAmount = nextWeekPrice - currentPrice
+      const analysisPrice = data[analysisIndex].close
+      const returnAmount = analysisPrice - currentPrice
       const returnPercentage = (returnAmount / currentPrice) * 100
 
       return {
-        date: data[nextWeekIndex].date,
+        date: data[analysisIndex].date,
         return: returnAmount,
         returnPercentage
       }
     }).filter(Boolean) as Array<{ date: string; return: number; returnPercentage: number }>
 
-    return { matches, nextWeekReturns }
+    return { matches, analysisReturns }
   }
 }

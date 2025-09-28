@@ -97,9 +97,34 @@ npm run db:studio       # Open Prisma Studio
 npm run db:reset        # Reset database
 ```
 
+### Phase 6: Data Architecture Fix
+- Fixed client-side database access issue in StrategyTester component
+- Created `/api/historical-data` endpoint for server-side database queries
+- Updated StrategyTester to use API route instead of direct Prisma access
+- Ensured application correctly displays real historical data from database
+- Eliminated fallback to random demo data during strategy testing
+
+### Phase 7: Variable Analysis Period Enhancement
+- Updated strategy engine to accept configurable analysis period instead of hardcoded 7-day period
+- Added "Analysis Period (days)" input field to strategy form UI
+- Modified StrategyEngine.backtest() and StrategyEngine.analyzeStrategy() methods to use variable analysisDays parameter
+- Updated strategy summary text to dynamically display selected analysis period
+- Enhanced user experience with flexible strategy testing for any number of analysis days (1-30)
+
+### Phase 8: Threshold Range Enhancement
+- Updated StrategyParameters interface to support threshold ranges (thresholdMin/thresholdMax) instead of single threshold value
+- Modified strategy engine logic to match price changes within specified threshold ranges
+- Replaced single threshold input with separate min/max threshold range inputs in strategy form UI
+- Added validation to ensure minimum threshold is not greater than maximum threshold
+- Updated strategy summary to display threshold ranges (e.g., "down between 4% and 6%")
+- Enhanced strategy testing flexibility to capture broader market conditions within specified ranges
+
 ### Current Status
 - ✅ Fully functional trading strategy backtesting application
-- ✅ Real historical data spanning 5+ years
+- ✅ Real historical data spanning 5+ years (correctly displayed)
 - ✅ Support for both stocks and cryptocurrencies
 - ✅ Advanced backtesting metrics and visualizations
 - ✅ Responsive UI with charts and detailed trade analysis
+- ✅ Proper client-server data architecture using API routes
+- ✅ Variable analysis period (configurable 1-30 days instead of fixed 7-day period)
+- ✅ Threshold range support (test strategies within price change ranges instead of exact values)

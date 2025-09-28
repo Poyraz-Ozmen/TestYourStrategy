@@ -121,8 +121,8 @@ def main():
     print(f"Current time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
     try:
-        # Connect to database with retries
-        conn = wait_for_database('prisma/dev.db')
+        # Connect to database with retries (path relative to project root)
+        conn = wait_for_database('../prisma/dev.db')
         cursor = conn.cursor()
         print("Connected to database successfully")
 

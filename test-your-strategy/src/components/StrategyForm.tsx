@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { StrategyParameters } from '@/lib/strategy-engine'
 
 interface StrategyFormProps {
-  onSubmit: (symbol: string, assetType: 'STOCK' | 'CRYPTO', strategy: StrategyParameters) => void
+  onSubmit: (symbol: string, assetType: 'STOCK' | 'CRYPTO', strategy: StrategyParameters, analysisDays: number) => void
   loading: boolean
 }
 
@@ -18,8 +18,10 @@ interface Asset {
 export default function StrategyForm({ onSubmit, loading }: StrategyFormProps) {
   const [symbol, setSymbol] = useState('AAPL')
   const [assetType, setAssetType] = useState<'STOCK' | 'CRYPTO'>('STOCK')
-  const [threshold, setThreshold] = useState(5)
+  const [thresholdMin, setThresholdMin] = useState(4)
+  const [thresholdMax, setThresholdMax] = useState(6)
   const [period, setPeriod] = useState(7)
+  const [analysisDays, setAnalysisDays] = useState(7)
   const [direction, setDirection] = useState<'up' | 'down'>('down')
   const [availableAssets, setAvailableAssets] = useState<Asset[]>([])
 
@@ -40,14 +42,21 @@ export default function StrategyForm({ onSubmit, loading }: StrategyFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
+    // Validate threshold range
+    if (thresholdMin > thresholdMax) {
+      alert('Minimum threshold cannot be greater than maximum threshold')
+      return
+    }
+
     const strategy: StrategyParameters = {
       type: 'percentage_change',
-      threshold,
+      thresholdMin,
+      thresholdMax,
       period,
       direction
     }
 
-    onSubmit(symbol.toUpperCase(), assetType, strategy)
+    onSubmit(symbol.toUpperCase(), assetType, strategy, analysisDays)
   }
 
   return (
@@ -108,22 +117,45 @@ export default function StrategyForm({ onSubmit, loading }: StrategyFormProps) {
 
         <div className="space-y-4">
           <div>
-            <label htmlFor="threshold" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Threshold (%)
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Threshold Range (%)
             </label>
-            <input
-              type="number"
-              id="threshold"
-              value={threshold}
-              onChange={(e) => setThreshold(Number(e.target.value))}
-              min="0.1"
-              max="50"
-              step="0.1"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 dark:bg-gray-700 dark:text-white transition-colors"
-              required
-            />
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label htmlFor="thresholdMin" className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
+                  Min
+                </label>
+                <input
+                  type="number"
+                  id="thresholdMin"
+                  value={thresholdMin}
+                  onChange={(e) => setThresholdMin(Number(e.target.value))}
+                  min="0.1"
+                  max="50"
+                  step="0.1"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 dark:bg-gray-700 dark:text-white transition-colors"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="thresholdMax" className="block text-xs text-gray-600 dark:text-gray-400 mb-1">
+                  Max
+                </label>
+                <input
+                  type="number"
+                  id="thresholdMax"
+                  value={thresholdMax}
+                  onChange={(e) => setThresholdMax(Number(e.target.value))}
+                  min="0.1"
+                  max="50"
+                  step="0.1"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 dark:bg-gray-700 dark:text-white transition-colors"
+                  required
+                />
+              </div>
+            </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Price change threshold to trigger the strategy
+              Price change threshold range to trigger the strategy
             </p>
           </div>
 
@@ -143,6 +175,25 @@ export default function StrategyForm({ onSubmit, loading }: StrategyFormProps) {
             />
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Number of days to look back for price change
+            </p>
+          </div>
+
+          <div>
+            <label htmlFor="analysisDays" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Analysis Period (days)
+            </label>
+            <input
+              type="number"
+              id="analysisDays"
+              value={analysisDays}
+              onChange={(e) => setAnalysisDays(Number(e.target.value))}
+              min="1"
+              max="30"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 dark:bg-gray-700 dark:text-white transition-colors"
+              required
+            />
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Number of days to analyze after the trigger condition
             </p>
           </div>
         </div>
@@ -182,9 +233,9 @@ export default function StrategyForm({ onSubmit, loading }: StrategyFormProps) {
         </h3>
         <p className="text-sm text-blue-700 dark:text-blue-400">
           Test what happens when <strong>{symbol}</strong> is{' '}
-          <strong>{direction === 'down' ? 'down' : 'up'} {threshold}%</strong> over{' '}
+          <strong>{direction === 'down' ? 'down' : 'up'} between {thresholdMin}% and {thresholdMax}%</strong> over{' '}
           <strong>{period} day{period !== 1 ? 's' : ''}</strong>.
-          We'll analyze the next week's performance in similar historical situations.
+          We&apos;ll analyze the next <strong>{analysisDays} day{analysisDays !== 1 ? 's' : ''}</strong> performance in similar historical situations.
         </p>
       </div>
 

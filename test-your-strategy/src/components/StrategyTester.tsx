@@ -16,7 +16,8 @@ export default function StrategyTester() {
   const handleStrategyTest = async (
     symbol: string,
     assetType: 'STOCK' | 'CRYPTO',
-    strategy: StrategyParameters
+    strategy: StrategyParameters,
+    analysisDays: number
   ) => {
     setLoading(true)
     setError(null)
@@ -33,7 +34,7 @@ export default function StrategyTester() {
         } else {
           throw new Error('No database data available')
         }
-      } catch (dbError) {
+      } catch {
         console.log(`No database data for ${symbol}, falling back to demo data`)
         // Fallback to demo data if not in database
         const marketDataService = new MarketDataService()
@@ -42,7 +43,7 @@ export default function StrategyTester() {
 
       setHistoricalData(data)
 
-      const backtestResults = StrategyEngine.backtest(data.data, strategy, 7)
+      const backtestResults = StrategyEngine.backtest(data.data, strategy, analysisDays)
       setResults(backtestResults)
 
     } catch (err) {
