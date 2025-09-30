@@ -119,12 +119,22 @@ npm run db:reset        # Reset database
 - Updated strategy summary to display threshold ranges (e.g., "down between 4% and 6%")
 - Enhanced strategy testing flexibility to capture broader market conditions within specified ranges
 
+### Phase 9: Cryptocurrency Data Integration Fix
+- Identified Prisma ORM conversion error when querying Cryptocurrency table ("Conversion failed: input contains invalid characters")
+- Root cause: Prisma's type conversion was failing on datetime fields in Cryptocurrency/CryptocurrencyPrice tables
+- Solution: Implemented raw SQL queries using Prisma's `$queryRaw` to bypass automatic type conversion
+- Updated `database-service.ts` `getHistoricalData()` method to use raw SQL for cryptocurrency queries
+- Updated `getAvailableSymbols()` method to gracefully handle Cryptocurrency table query errors with try-catch
+- Cryptocurrency data now loads correctly from separate Cryptocurrency/CryptocurrencyPrice tables
+- Maintained dual-table architecture: Asset/PriceData for stocks, Cryptocurrency/CryptocurrencyPrice for crypto
+
 ### Current Status
 - ✅ Fully functional trading strategy backtesting application
 - ✅ Real historical data spanning 5+ years (correctly displayed)
-- ✅ Support for both stocks and cryptocurrencies
+- ✅ Support for both stocks and cryptocurrencies with separate database tables
 - ✅ Advanced backtesting metrics and visualizations
 - ✅ Responsive UI with charts and detailed trade analysis
 - ✅ Proper client-server data architecture using API routes
 - ✅ Variable analysis period (configurable 1-30 days instead of fixed 7-day period)
 - ✅ Threshold range support (test strategies within price change ranges instead of exact values)
+- ✅ Cryptocurrency data fetched correctly from database using raw SQL queries

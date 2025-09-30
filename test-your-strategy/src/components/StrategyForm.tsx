@@ -39,6 +39,16 @@ export default function StrategyForm({ onSubmit, loading }: StrategyFormProps) {
       .catch(err => console.error('Failed to fetch assets:', err))
   }, [])
 
+  // Filter assets based on selected asset type
+  const filteredAssets = availableAssets.filter(asset => asset.type === assetType)
+
+  // Update selected symbol when asset type changes
+  useEffect(() => {
+    if (filteredAssets.length > 0 && !filteredAssets.find(a => a.symbol === symbol)) {
+      setSymbol(filteredAssets[0].symbol)
+    }
+  }, [assetType, filteredAssets, symbol])
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -67,20 +77,16 @@ export default function StrategyForm({ onSubmit, loading }: StrategyFormProps) {
             <label htmlFor="symbol" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Symbol
             </label>
-            {availableAssets.length > 0 ? (
+            {filteredAssets.length > 0 ? (
               <select
                 id="symbol"
                 value={symbol}
                 onChange={(e) => {
-                  const selectedAsset = availableAssets.find(a => a.symbol === e.target.value)
                   setSymbol(e.target.value)
-                  if (selectedAsset) {
-                    setAssetType(selectedAsset.type)
-                  }
                 }}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 dark:bg-gray-700 dark:text-white transition-colors"
               >
-                {availableAssets.map(asset => (
+                {filteredAssets.map(asset => (
                   <option key={asset.symbol} value={asset.symbol} className="dark:bg-gray-700 dark:text-white">
                     {asset.symbol} - {asset.name} ({asset._count.priceData} records)
                   </option>

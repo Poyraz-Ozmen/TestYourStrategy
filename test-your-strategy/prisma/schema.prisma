@@ -63,6 +63,34 @@ model BacktestResult {
   createdAt         DateTime @default(now())
 }
 
+model Cryptocurrency {
+  id          String                @id @default(cuid())
+  symbol      String                @unique
+  name        String
+  fullName    String?
+  description String?
+  website     String?
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  priceData   CryptocurrencyPrice[]
+}
+
+model CryptocurrencyPrice {
+  id               String         @id @default(cuid())
+  cryptocurrencyId String
+  cryptocurrency   Cryptocurrency @relation(fields: [cryptocurrencyId], references: [id])
+  date             DateTime
+  open             Float
+  high             Float
+  low              Float
+  close            Float
+  volume           Float
+  marketCap        Float?
+  createdAt        DateTime       @default(now())
+
+  @@unique([cryptocurrencyId, date])
+}
+
 enum AssetType {
   STOCK
   CRYPTO

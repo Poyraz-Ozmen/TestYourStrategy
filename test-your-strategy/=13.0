@@ -1,0 +1,10 @@
+Requirement already satisfied: websockets in c:\users\pc\appdata\local\packages\pythonsoftwarefoundation.python.3.11_qbz5n2kfra8p0\localcache\local-packages\python311\site-packages (10.4)
+Collecting websockets
+  Using cached websockets-15.0.1-cp311-cp311-win_amd64.whl.metadata (7.0 kB)
+Using cached websockets-15.0.1-cp311-cp311-win_amd64.whl (176 kB)
+Installing collected packages: websockets
+  Attempting uninstall: websockets
+    Found existing installation: websockets 10.4
+    Uninstalling websockets-10.4:
+      Successfully uninstalled websockets-10.4
+Successfully installed websockets-15.0.1
