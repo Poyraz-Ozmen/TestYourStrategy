@@ -23,6 +23,7 @@ export default function StrategyForm({ onSubmit, loading }: StrategyFormProps) {
   const [period, setPeriod] = useState(7)
   const [analysisDays, setAnalysisDays] = useState(7)
   const [direction, setDirection] = useState<'up' | 'down'>('down')
+  const [startDate, setStartDate] = useState('')
   const [availableAssets, setAvailableAssets] = useState<Asset[]>([])
 
   useEffect(() => {
@@ -63,7 +64,8 @@ export default function StrategyForm({ onSubmit, loading }: StrategyFormProps) {
       thresholdMin,
       thresholdMax,
       period,
-      direction
+      direction,
+      ...(startDate && { startDate })
     }
 
     onSubmit(symbol.toUpperCase(), assetType, strategy, analysisDays)
@@ -203,6 +205,22 @@ export default function StrategyForm({ onSubmit, loading }: StrategyFormProps) {
             </p>
           </div>
         </div>
+      </div>
+
+      <div>
+        <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Start Date (Optional)
+        </label>
+        <input
+          type="date"
+          id="startDate"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 dark:bg-gray-700 dark:text-white transition-colors"
+        />
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          Only analyze trades from this date onwards. Leave empty to use all historical data.
+        </p>
       </div>
 
       <div>

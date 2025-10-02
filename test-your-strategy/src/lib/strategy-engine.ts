@@ -6,6 +6,7 @@ export interface StrategyParameters {
   thresholdMax: number
   period: number
   direction: 'up' | 'down'
+  startDate?: string
 }
 
 export interface StrategyCondition {
@@ -76,7 +77,18 @@ export class StrategyEngine {
   }
 
   static backtest(data: MarketData[], strategy: StrategyParameters, analysisDays: number = 7): BacktestResults {
-    const matches = this.findMatches(data, strategy)
+    // Filter data by start date if provided
+    let filteredData = data
+    if (strategy.startDate) {
+      const startDateObj = new Date(strategy.startDate)
+      console.log('Filtering data from start date:', strategy.startDate)
+      console.log('Original data length:', data.length)
+      filteredData = data.filter(item => new Date(item.date) >= startDateObj)
+      console.log('Filtered data length:', filteredData.length)
+      console.log('Date range:', filteredData.length > 0 ? `${filteredData[0].date} to ${filteredData[filteredData.length - 1].date}` : 'No data')
+    }
+
+    const matches = this.findMatches(filteredData, strategy)
     const trades: BacktestTrade[] = []
     let totalReturn = 0
     let profitableTrades = 0
@@ -85,17 +97,17 @@ export class StrategyEngine {
       const entryIndex = matchIndex + 1
       const exitIndex = entryIndex + analysisDays
 
-      if (exitIndex >= data.length) return
+      if (exitIndex >= filteredData.length) return
 
-      const entryPrice = data[entryIndex].close
-      const exitPrice = data[exitIndex].close
+      const entryPrice = filteredData[entryIndex].close
+      const exitPrice = filteredData[exitIndex].close
       const returnAmount = exitPrice - entryPrice
       const returnPercentage = (returnAmount / entryPrice) * 100
 
       const trade: BacktestTrade = {
-        entryDate: data[entryIndex].date,
+        entryDate: filteredData[entryIndex].date,
         entryPrice,
-        exitDate: data[exitIndex].date,
+        exitDate: filteredData[exitIndex].date,
         exitPrice,
         return: returnAmount,
         returnPercentage
@@ -111,7 +123,7 @@ export class StrategyEngine {
 
     const totalTrades = trades.length
     const winRate = totalTrades > 0 ? (profitableTrades / totalTrades) * 100 : 0
-    const totalReturnPercentage = totalTrades > 0 ? (totalReturn / (totalTrades * data[0].close)) * 100 : 0
+    const totalReturnPercentage = totalTrades > 0 ? (totalReturn / (totalTrades * filteredData[0].close)) * 100 : 0
 
     const maxDrawdown = this.calculateMaxDrawdown(trades)
     const sharpeRatio = this.calculateSharpeRatio(trades)
@@ -162,26 +174,32 @@ export class StrategyEngine {
     matches: Array<{ date: string; price: number; change: number }>
     analysisReturns: Array<{ date: string; return: number; returnPercentage: number }>
   } {
-    const dataWithChanges = this.calculatePercentageChange(data, strategy.period)
-    const matchIndices = this.findMatches(data, strategy)
+    // Filter data by start date if provided
+    let filteredData = data
+    if (strategy.startDate) {
+      filteredData = data.filter(item => new Date(item.date) >= new Date(strategy.startDate!))
+    }
+
+    const dataWithChanges = this.calculatePercentageChange(filteredData, strategy.period)
+    const matchIndices = this.findMatches(filteredData, strategy)
 
     const matches = matchIndices.map(index => ({
-      date: data[index].date,
-      price: data[index].close,
+      date: filteredData[index].date,
+      price: filteredData[index].close,
       change: (dataWithChanges[index] as any).percentageChange
     }))
 
     const analysisReturns = matchIndices.map(index => {
       const analysisIndex = index + analysisDays
-      if (analysisIndex >= data.length) return null
+      if (analysisIndex >= filteredData.length) return null
 
-      const currentPrice = data[index].close
-      const analysisPrice = data[analysisIndex].close
+      const currentPrice = filteredData[index].close
+      const analysisPrice = filteredData[analysisIndex].close
       const returnAmount = analysisPrice - currentPrice
       const returnPercentage = (returnAmount / currentPrice) * 100
 
       return {
-        date: data[analysisIndex].date,
+        date: filteredData[analysisIndex].date,
         return: returnAmount,
         returnPercentage
       }
